@@ -16,6 +16,8 @@ class App extends Component {
         solidityStorage: null,
         solidityValue: 0,
         solidityInput: 0,
+        animoji:null,
+        animojiBalance:0
     }
 
     componentDidMount = async () => {
@@ -55,19 +57,22 @@ class App extends Component {
 
         const vyperStorage = await this.loadContract("dev", "VyperStorage")
         const solidityStorage = await this.loadContract("dev", "SolidityStorage")
+        const animoji = await this.loadContract("dev", "Animoji")
 
-        if (!vyperStorage || !solidityStorage) {
+        if (!vyperStorage || !solidityStorage || !animoji) {
             return
         }
 
         const vyperValue = await vyperStorage.methods.get().call()
         const solidityValue = await solidityStorage.methods.get().call()
-
+        const animojiBalance = await animoji.methods.totalSupply().call()
         this.setState({
             vyperStorage,
             vyperValue,
             solidityStorage,
             solidityValue,
+            animoji,
+            animojiBalance
         })
     }
 
@@ -132,7 +137,8 @@ class App extends Component {
         const {
             web3, accounts, chainid,
             vyperStorage, vyperValue, vyperInput,
-            solidityStorage, solidityValue, solidityInput
+            solidityStorage, solidityValue, solidityInput,
+            animoji
         } = this.state
 
         if (!web3) {
@@ -143,62 +149,14 @@ class App extends Component {
             return <div>Wrong Network! Switch to your local RPC "Localhost: 8545" in your Web3 provider (e.g. Metamask)</div>
         }
 
-        if (!vyperStorage || !solidityStorage) {
+        if (!vyperStorage || !solidityStorage || !animoji) {
             return <div>Could not find a deployed contract. Check console for details.</div>
         }
 
         const isAccountsUnlocked = accounts ? accounts.length > 0 : false
 
         return (<div className="App">
-            <h1>Your Brownie Mix is installed and ready.</h1>
-            <p>
-                If your contracts compiled and deployed successfully, you can see the current
-                storage values below.
-            </p>
-            {
-                !isAccountsUnlocked ?
-                    <p><strong>Connect with Metamask and refresh the page to
-                        be able to edit the storage fields.</strong>
-                    </p>
-                    : null
-            }
-            <h2>Vyper Storage Contract</h2>
-
-            <div>The stored value is: {vyperValue}</div>
-            <br/>
-            <form onSubmit={(e) => this.changeVyper(e)}>
-                <div>
-                    <label>Change the value to: </label>
-                    <br/>
-                    <input
-                        name="vyperInput"
-                        type="text"
-                        value={vyperInput}
-                        onChange={(e) => this.setState({vyperInput: e.target.value})}
-                    />
-                    <br/>
-                    <button type="submit" disabled={!isAccountsUnlocked}>Submit</button>
-                </div>
-            </form>
-
-            <h2>Solidity Storage Contract</h2>
-            <div>The stored value is: {solidityValue}</div>
-            <br/>
-            <form onSubmit={(e) => this.changeSolidity(e)}>
-                <div>
-                    <label>Change the value to: </label>
-                    <br/>
-                    <input
-                        name="solidityInput"
-                        type="text"
-                        value={solidityInput}
-                        onChange={(e) => this.setState({solidityInput: e.target.value})}
-                    />
-                    <br/>
-                    <button type="submit" disabled={!isAccountsUnlocked}>Submit</button>
-
-                </div>
-            </form>
+                       <h1>Animoji Coin totalSupply <span style={{color:'gray'}} >{this.state.animojiBalance} </span> </h1> 
         </div>)
     }
 }
